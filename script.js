@@ -18,6 +18,68 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // SLIDER GENERATOR (dipakai oleh slider hero & testimoni)
+  function setupSlider(sliderId, slideClass, prevId, nextId, dotsId, intervalMs) {
+    const slider = document.getElementById(sliderId);
+    if (!slider) return;
+    const slides = slider.querySelectorAll('.' + slideClass);
+    const dotsContainer = document.getElementById(dotsId);
+    let current = 0;
+    let autoTimer = null;
+
+    if (slides.length === 0) return;
+
+    const goToSlide = (index) => {
+      current = ((index % slides.length) + slides.length) % slides.length;
+      // Geser berdasarkan posisi piksel slide (akurat walaupun track lebih lebar dari container)
+      slider.style.transform = 'translateX(-' + slides[current].offsetLeft + 'px)';
+      if (dotsContainer) {
+        dotsContainer.querySelectorAll('button').forEach((dot, i) => {
+          dot.classList.toggle('bg-navy-900', i === current);
+          dot.classList.toggle('bg-navy-900/30', i !== current);
+        });
+      }
+    };
+
+    if (dotsContainer) {
+      slides.forEach((_, i) => {
+        const dot = document.createElement('button');
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-navy-900/30 transition-all hover:bg-navy-900/60';
+        dot.setAttribute('aria-label', 'Ke slide ' + (i + 1));
+        dot.addEventListener('click', () => {
+          goToSlide(i);
+          restartAuto();
+        });
+        dotsContainer.appendChild(dot);
+      });
+    }
+
+    const restartAuto = () => {
+      if (autoTimer) clearInterval(autoTimer);
+      if (slides.length > 1) {
+        autoTimer = setInterval(() => goToSlide(current + 1), intervalMs);
+      }
+    };
+
+    document.getElementById(prevId)?.addEventListener('click', () => {
+      goToSlide(current - 1);
+      restartAuto();
+    });
+    document.getElementById(nextId)?.addEventListener('click', () => {
+      goToSlide(current + 1);
+      restartAuto();
+    });
+
+    goToSlide(0);
+    restartAuto();
+  }
+
+  // HERO SLIDER (GESER KE SAMPING)
+  setupSlider('hero-slider', 'hero-slide', 'hero-slide-prev', 'hero-slide-next', 'hero-slide-dots', 4000);
+
+  // TESTIMONI SLIDER
+  setupSlider('testi-slider', 'testi-slide', 'testi-slide-prev', 'testi-slide-next', 'testi-slide-dots', 5000);
+
   // Mobile Menu Drawer Toggle
   const menuToggleBtn = document.getElementById('menu-toggle');
   const mobileMenu = document.getElementById('mobile-menu');
